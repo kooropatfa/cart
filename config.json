@@ -1,0 +1,47 @@
+{
+  "discounts": [
+    {
+      "name": "buy_1_get_1_tea",
+      "type": "buy_n_get_n_free",
+      "product_code": "GR1",
+      "threshold_quantity": 2,
+      "free_quantity": 1,
+      "discount_fraction": null,
+      "fixed_price": null
+    },
+    {
+      "name": "strawberries_discount",
+      "type": "bulk",
+      "product_code": "SR1",
+      "threshold_quantity": 3,
+      "free_quantity": null,
+      "discount_fraction": null,
+      "fixed_price": 450
+    },
+    {
+      "name": "coffee_discount",
+      "type": "bulk",
+      "product_code": "CF1",
+      "threshold_quantity": 3,
+      "free_quantity": null,
+      "discount_fraction": "1/3",
+      "fixed_price": null
+    }
+  ],
+  "products": [
+    { "name": "Green Tea",
+      "price": 311,
+      "code": "GR1"
+    },
+    {
+      "name": "Strawberries",
+      "price": 500,
+      "code": "SR1"
+    },
+    {
+      "name": "Coffee",
+      "price": 1123,
+      "code": "CF1"
+    }
+  ]
+}
