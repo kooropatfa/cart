@@ -4,7 +4,6 @@ require 'spec_helper'
 require_relative '../../loaders/discounts'
 
 describe Loaders::Discounts do
-
   subject { described_class.new }
 
   describe '#initialize' do

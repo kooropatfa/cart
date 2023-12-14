@@ -1,18 +1,20 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require_relative '../../loaders/products'
 
 describe Loaders::Products do
   let(:config_file) { 'config.json' }
-  
+
   describe '#initialize' do
     context 'when products are found in the config file' do
       it 'loads the products' do
         expect(subject.products).not_to be_empty
       end
     end
-    
+
     context 'when no products are found in the config file' do
-      before do 
+      before do
         allow(JSON).to receive(:parse).with(anything).and_return({ 'products' => [] })
       end
 

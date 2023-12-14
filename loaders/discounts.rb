@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'json'
-require 'pry'
 
 require_relative '../discounts/discount'
 require_relative '../discounts/buy_n_get_n_free'
@@ -14,7 +13,7 @@ module Loaders
       @discounts = discounts_json.map do |discount|
         type = type(discount)
         discount_class_name = discount_class_name_for(type)
-        
+
         raise "Unknown discount type: #{type}" unless discount_class_name
 
         discount_class = ::Discounts.const_get(discount_class_name)
@@ -35,5 +34,3 @@ module Loaders
     end
   end
 end
-
-

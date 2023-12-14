@@ -2,7 +2,6 @@
 
 require 'spec_helper'
 require_relative '../cart'
-require 'pry'
 
 describe Cart do
   let(:product1) { { 'code' => 'asd', 'name' => 'Asdberry', 'price' => 1234 } }
@@ -99,10 +98,10 @@ describe Cart do
     context 'when the cart already contains the same products' do
       before { subject.products = [product1, other_product, product2] }
 
-      let(:product) { product1}
+      let(:product) { product1 }
 
       it 'removes the last product with the same code from the cart' do
-        expect { subject.remove_product(product) }.to change{subject.products}
+        expect { subject.remove_product(product) }.to change { subject.products }
           .from([product1, other_product, product2]).to([product1, other_product])
       end
 
@@ -136,7 +135,7 @@ describe Cart do
 
       context 'when the cart contains products' do
         before { subject.products = [product1, product2, other_product] }
-        
+
         context 'with discounts' do
           before do
             product1['discount'] = 100
@@ -148,7 +147,7 @@ describe Cart do
             expect(subject.total('discount')).to eq(600)
           end
         end
-        
+
         context 'without discounts' do
           it 'returns the total amount of all discounts' do
             expect(subject.total('discount')).to eq(0)
@@ -187,62 +186,62 @@ describe Cart do
   describe '#run' do
     let(:product1) { ::Loaders::Products.new.by_code('GR1') }
     let(:product2) { ::Loaders::Products.new.by_code('SR1') }
-  
+
     context 'when user adds a product' do
       before do
         allow_any_instance_of(Cart).to receive(:gets).and_return('1', 'GR1', '4')
       end
-  
+
       it 'adds the product to the cart' do
         expect { subject.run }.to change { subject.products }.from([]).to([product1])
       end
-  
+
       it 'prints a message indicating the product was added' do
         expect { subject.run }.to output(/#{Regexp.escape(product1['name'])} added to the cart/m).to_stdout
       end
     end
-  
+
     context 'when user removes a product' do
       before do
         subject.products = [product1, product2]
         allow_any_instance_of(Cart).to receive(:gets).and_return('2', 'GR1', '4')
       end
-  
+
       it 'removes the product from the cart' do
         expect { subject.run }.to change { subject.products }.from([product1, product2]).to([product2])
       end
-  
+
       it 'prints a message indicating the product was removed' do
         expect { subject.run }.to output(/#{Regexp.escape(product1['name'])} removed from the cart/m).to_stdout
       end
     end
-  
+
     context 'when user prints the cart summary' do
       before do
         subject.products = [product1, product2]
         allow_any_instance_of(Cart).to receive(:gets).and_return('3', '4')
       end
-  
+
       it 'prints the cart summary' do
         expect { subject.run }.to output(/Total: /).to_stdout
       end
     end
-  
+
     context 'when user selects an invalid option' do
       before do
         allow_any_instance_of(Cart).to receive(:gets).and_return('invalid', '4')
       end
-  
+
       it 'prints an "Invalid option" message' do
         expect { subject.run }.to output(/Invalid option/).to_stdout
       end
     end
-  
+
     context 'when user chooses to exit' do
       before do
         allow_any_instance_of(Cart).to receive(:gets).and_return('4')
       end
-  
+
       it 'exits the loop and ends the run' do
         expect { subject.run }.to output(/Thank you and good bye/).to_stdout
       end

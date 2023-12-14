@@ -23,7 +23,7 @@ class Cart
       case option
       when '1'
         p 'Enter product code: '
-        
+
         code = gets.chomp
 
         add_product(product(code))
@@ -92,7 +92,7 @@ class Cart
   end
 
   def product(code)
-    product = @products_loader.by_code(code)
+    @products_loader.by_code(code)
   end
 
   def add_product(product)
@@ -107,7 +107,6 @@ class Cart
 
     if index_to_remove
       products.delete_at(index_to_remove)
-
 
       print "\n\n #{product['name']} removed from the cart! \n\n"
     else
@@ -140,18 +139,18 @@ class Cart
       "#{product['name']} | #{priceify(product['price'])}    | #{priceify(product['discount'])}"
     end
 
-    summary = 
+    summary =
       <<~SUMMARY
 
 
-        PRODUCTS: | PRICE:     | DISCOUNT:  
+        PRODUCTS: | PRICE:     | DISCOUNT:#{'  '}
         ----------------------------------
-        #{ products_rows.join("\n") }
+        #{products_rows.join("\n")}
         ----------------------------------
 
 
         Total prices: #{priceify(prices_total)}
-        Total discounts: #{priceify(discounts_total)} 
+        Total discounts: #{priceify(discounts_total)}#{' '}
 
         Total: #{priceify(total)}
 
