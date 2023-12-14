@@ -22,7 +22,10 @@ config.json can be modified:
 - each discount needs to have name, type, product_code and threshold_quantity. Additionally, Bulk discount have to specify one of `discount_fraction` or `fixed_price`, while BuyNgetNFree have to specify `free_quantity`
 - products are matched with discounts by `product.code - discount.product_code` so to make discount appliable they need to match
 - please keep in mind that discount types are mapped to the class names in the code so introducing new types of discounts will require code changes
+  
+And to run tests suite type `rspec spec`.
 
+Have fun :)
 
 
 
