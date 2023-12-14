@@ -70,6 +70,18 @@ describe Cart do
 
       it_behaves_like 'cart that adds product'
     end
+
+    context 'when whe product is not found' do
+      let(:product) { nil }
+
+      it 'does not add a product to the cart' do
+        expect { subject.add_product(product) }.not_to(change { subject.products })
+      end
+
+      it 'prints product not found' do
+        expect { subject.remove_product(product) }.to output(/Product not found/).to_stdout
+      end 
+    end
   end
 
   describe '#remove_product' do

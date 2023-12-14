@@ -2,6 +2,7 @@
 
 require_relative 'loaders/products'
 require_relative 'loaders/discounts'
+require 'pry'
 
 class Cart
   CURRENCY_SYMBOL = '€'
@@ -22,13 +23,13 @@ class Cart
 
       case option
       when '1'
-        p 'Enter product code: '
+        print 'Enter product code: '
 
         code = gets.chomp
 
         add_product(product(code))
       when '2'
-        p 'Enter product code: '
+        print 'Enter product code: '
 
         code = gets.chomp
 
@@ -96,9 +97,12 @@ class Cart
   end
 
   def add_product(product)
-    products << product
-
-    print "\n\n#{product['name']} added to the cart! \n\n"
+    if product
+      products << product
+      print "\n\n#{product['name']} added to the cart! \n\n"
+    else
+      print "\n\nProduct not found! \n\n"
+    end
   end
 
   # remove the last product with matching code
@@ -110,7 +114,7 @@ class Cart
 
       print "\n\n #{product['name']} removed from the cart! \n\n"
     else
-      print "\n\n#{product['name']} not found in the cart! \n\n"
+      print "Product not found in the cart! \n\n"
     end
   end
 
@@ -160,5 +164,3 @@ class Cart
     print summary
   end
 end
-
-# Cart.new.run
