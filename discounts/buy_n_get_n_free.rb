@@ -2,7 +2,6 @@
 
 require_relative 'discount'
 require_relative '../filters/products/by_code'
-require 'pry'
 
 module Discounts
   class BuyNGetNFree < Discount
