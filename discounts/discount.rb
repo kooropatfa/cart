@@ -1,12 +1,22 @@
 # frozen_string_literal: true
 
 module Discounts
-  TYPES_MAPPING = {
+  TYPES_MAPPING = Hash.new('NoSuchDiscountType').merge(
     'buy_n_get_n_free' => 'BuyNGetNFree',
     'bulk' => 'Bulk'
-  }.freeze
+  ).freeze
 
   class Discount
+    class Factory
+      def self.build(discount_config)
+        type = discount_config.type
+
+        Discounts.const_get(Discounts::TYPES_MAPPING[type]).new(discount_config)
+      rescue NameError
+        raise "Unknown discount type: #{type}" 
+      end
+    end
+
     def initialize(properties)
       raise 'Discount properties not specified' if properties.nil? || properties.empty?
       raise 'Discount properties should be a hash' unless properties.is_a?(Hash)
@@ -28,7 +38,6 @@ module Discounts
     private
 
     def validate_general_discount_properties
-      validate_type
       validate_threshold
       validate_product_code
     end
@@ -46,13 +55,6 @@ module Discounts
       end
 
       p "WARNING! Dicount threshold for #{discount_properties['name']} is set to 0" if threshold_quantity.zero?
-    end
-
-    def validate_type
-      type = discount_properties['type']
-
-      raise 'Discount type not specified' unless type
-      raise "Discount type should be one of #{Discounts::TYPES_MAPPING.keys}" unless Discounts::TYPES_MAPPING[type]
     end
 
     def validate_product_code

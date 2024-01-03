@@ -9,7 +9,7 @@ describe Cart do
   let(:other_product) { { 'code' => 'def', 'name' => 'Defruit', 'price' => 1001 } }
   let(:summary_regexp) { /.*PRODUCTS:\s+\|\s+PRICE:\s+\|\s+DISCOUNT:\s+\|\n.*/ }
 
-  before { allow_any_instance_of(::Loaders::Discounts).to receive(:discounts).and_return([]) }
+  before { allow(::Loaders::Discounts::DiscountConfig).to receive(:load).and_return([]) }
 
   subject { described_class.new }
 
@@ -22,8 +22,8 @@ describe Cart do
 
   shared_examples 'cart that can not find the product' do
     it 'prints product not found in the cart' do
-      expected_output_regexp = /#{Regexp.escape(product['name'])} not found in the cart/
-      expect { subject.remove_product(product) }.to output(expected_output_regexp).to_stdout
+      expected_output = "Product not found in the cart! \n\n"
+      expect { subject.remove_product(product) }.to output(expected_output).to_stdout
     end
   end
 

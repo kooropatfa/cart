@@ -2,7 +2,6 @@
 
 require_relative 'loaders/products'
 require_relative 'loaders/discounts'
-require 'pry'
 
 class Cart
   CURRENCY_SYMBOL = '€'
@@ -11,7 +10,7 @@ class Cart
   def initialize
     @products_loader = ::Loaders::Products.new
     @products_in_shop = @products_loader.products
-    @discounts = ::Loaders::Discounts.new.discounts
+    @discounts = ::Loaders::Discounts::DiscountConfig.load
     @products = []
   end
 

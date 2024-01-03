@@ -8,29 +8,21 @@ require_relative '../discounts/bulk'
 
 module Loaders
   class Discounts
-    def initialize
-      discounts_json = JSON.parse(File.read('config.json'))['discounts']
-      @discounts = discounts_json.map do |discount|
-        type = type(discount)
-        discount_class_name = discount_class_name_for(type)
-
-        raise "Unknown discount type: #{type}" unless discount_class_name
-
-        discount_class = ::Discounts.const_get(discount_class_name)
-        discount_class.new(discount)
+    class DiscountConfig < Hash
+      def initialize(discount_hash)
+        super.merge!(discount_hash)
       end
-    end
 
-    attr_reader :discounts
+      def self.load
+        discounts_json = JSON.parse(File.read('config.json'))['discounts']
+        discounts_json
+        .map { |discount_hash| DiscountConfig.new(discount_hash) }
+        .map { |discount_config| ::Discounts::Discount::Factory.build(discount_config) }
+      end
 
-    private
-
-    def discount_class_name_for(type)
-      ::Discounts::TYPES_MAPPING[type]
-    end
-
-    def type(discount)
-      discount['type']
+      def type
+        self['type']
+      end
     end
   end
 end
