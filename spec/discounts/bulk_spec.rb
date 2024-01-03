@@ -3,34 +3,32 @@
 require 'spec_helper'
 require 'bigdecimal'
 require_relative '../../discounts/bulk'
+require_relative '../../products/product'
 
 describe Discounts::Bulk do
   let(:code) { 'PBZ' }
-  let(:other_product) { { 'code' => 'TBZ', 'name' => 'Testberries', 'price' => 1 } }
   let(:product_properties) { { 'code' => code, 'name' => 'Plumberries', 'price' => 2345 } }
   let(:other_product_properties) { { 'code' => 'TBZ', 'name' => 'Testberry', 'price' => 5432 } }
 
-  4.times { |i| let("product#{i + 1}".to_sym) { product_properties } }
-  3.times { |i| let("other_product#{i + 1}".to_sym) { other_product_properties } }
+  4.times { |i| let("product#{i + 1}".to_sym) { Products::Product.build(product_properties) } }
+  3.times { |i| let("other_product#{i + 1}".to_sym) { Products::Product.build(other_product_properties) } }
 
   let(:discount_json) do
     {
-      'name' => 'Very berry week! Bulk discount, greag deal, no kidding!',
+      'name' => 'Very berry week! Bulk discount, great deal, no kidding!',
       'product_code' => code,
       'threshold_quantity' => 3,
       'type' => 'bulk'
     }
   end
 
-  before { allow_any_instance_of(::Loaders::Products).to receive(:by_code).with(code).and_return(product1) }
+  before { allow_any_instance_of(::Loaders::Products).to receive(:find_by_code).with(code).and_return(product_properties) }
 
   subject { described_class.new(discount_json) }
 
   shared_examples 'a not eligible discount' do
-    it 'does not apply any discounts and removes existing ones' do
-      subject.apply(products)
-
-      products.each { |product| expect(product['discount']).to be_nil }
+    it 'does not apply any discounts' do
+      expect { subject.apply(products) }.not_to change { products.map(&:discount) }
     end
   end
 
@@ -48,7 +46,7 @@ describe Discounts::Bulk do
       end
 
       context 'when there are other products in the products list' do
-        before { products << other_product }
+        before { products << other_product1 }
 
         it_behaves_like 'a not eligible discount'
       end
@@ -61,28 +59,26 @@ describe Discounts::Bulk do
         it 'applies the discount to all products' do
           subject.apply(products)
 
-          products.each { |product| expect(product['discount']).to eq(discount_amount) }
+          products.each { |product| expect(product.discount).to eq(discount_amount) }
         end
       end
 
       context 'when there are other products in the products list' do
-        before { products << other_product }
+        before { products << other_product1 }
 
         it 'applies the discount only to discountable products' do
           subject.apply(products)
 
-          expect(product1['discount']).to eq(discount_amount)
-          expect(product2['discount']).to eq(discount_amount)
-          expect(product3['discount']).to eq(discount_amount)
-          expect(other_product['discount']).to be_nil
+          expect(product1.discount).to eq(discount_amount)
+          expect(product2.discount).to eq(discount_amount)
+          expect(product3.discount).to eq(discount_amount)
+          expect(other_product1.discount).to be_nil
         end
       end
     end
 
-    context 'when the discount becomes not eligible' do
+    context 'when the discount is not eligible' do
       let(:products) { [product1, product2] }
-
-      before { products.each { |product| product['discount'] = discount_amount } }
 
       it_behaves_like 'a not eligible discount'
     end

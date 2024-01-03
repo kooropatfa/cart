@@ -73,9 +73,10 @@ module Discounts
       products.count >= threshold_quantity
     end
 
+    # move to cart
     def remove_discounts
       products.each do |product|
-        product.delete('discount') if product['code'] == product_code
+        product.discount = nil if product.code == product_code
       end
     end
   end

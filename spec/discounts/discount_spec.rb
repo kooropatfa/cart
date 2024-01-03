@@ -144,37 +144,4 @@ describe Discounts::Discount do
       end
     end
   end
-
-  describe '#remove_discounts' do
-    context 'when the product code matches the discount product code' do
-      before do
-        products.each { |product| product['discount'] = 100 }
-        subject.instance_variable_set(:@products, products)
-      end
-
-      it 'removes the discount from the products' do
-        subject.send(:remove_discounts)
-        products.each { |product| expect(product).not_to have_key('discount') }
-      end
-    end
-
-    context 'when the product code does not match the discount product code' do
-      let(:other_product) { { 'code' => 'nan', 'name' => 'Not a nut', 'price' => 99, 'discount' => 98 } }
-
-      before do
-        products.each { |product| product['discount'] = 100 }
-        products << other_product
-        subject.instance_variable_set(:@products, products)
-      end
-
-      it 'does not remove the discount from the products' do
-        subject.send(:remove_discounts)
-
-        expect(product1).not_to have_key('discount')
-        expect(product2).not_to have_key('discount')
-        expect(product3).not_to have_key('discount')
-        expect(other_product['discount']).to eq(98)
-      end
-    end
-  end
 end

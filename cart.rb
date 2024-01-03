@@ -53,7 +53,7 @@ class Cart
     raise 'Invalid attribute' unless %w[price discount].include?(attribute)
 
     total = @products.reduce(0) do |total, product|
-      value = product[attribute]
+      value = product.send(attribute)
       total += value if value
 
       total
@@ -71,7 +71,7 @@ class Cart
     new_line
 
     @products_in_shop.each do |product|
-      print "#{product['code']} - #{product['name']} - #{priceify(product['price'])}"
+      print "#{product.code} - #{product.name} - #{priceify(product.price)}"
       new_line
     end
 
@@ -92,13 +92,13 @@ class Cart
   end
 
   def product(code)
-    @products_loader.by_code(code)
+    Products::Product.build(@products_loader.find_by_code(code))
   end
 
   def add_product(product)
     if product
       products << product
-      print "\n\n#{product['name']} added to the cart! \n\n"
+      print "\n\n#{product.name} added to the cart! \n\n"
     else
       print "\n\nProduct not found! \n\n"
     end
@@ -106,7 +106,8 @@ class Cart
 
   # remove the last product with matching code
   def remove_product(product)
-    index_to_remove = products.rindex { |p| p['code'] == product['code'] }
+    # NOTE:            this is line item v            v this is product template from the loader
+    index_to_remove = products.rindex { |p| p.code == product['code'] }
 
     if index_to_remove
       products.delete_at(index_to_remove)
@@ -139,7 +140,7 @@ class Cart
     total = prices_total - discounts_total
 
     products_rows = products.map do |product|
-      "#{product['name']} | #{priceify(product['price'])}    | #{priceify(product['discount'])}"
+      "#{product.name} | #{priceify(product.price)}    | #{priceify(product.discount)}"
     end
 
     summary =

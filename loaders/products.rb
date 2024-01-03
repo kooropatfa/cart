@@ -12,8 +12,8 @@ module Loaders
 
     attr_accessor :products
 
-    def by_code(code)
-      products.find { |product| product['code'] == code }.dup
+    def find_by_code(code)
+      products.find { |product| product['code'] == code }
     end
   end
 end

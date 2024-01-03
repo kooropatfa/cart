@@ -24,23 +24,22 @@ describe Loaders::Products do
     end
   end
 
-  describe '#by_code' do
+  describe '#find_by_code' do
     let(:products) { subject.products }
 
     context 'when a product with the given code exists' do
-      it 'returns a duplicate of the product' do
+      it 'returns that product' do
         product = products.first
-        duplicate_product = subject.by_code(product['code'])
+        duplicate_product = subject.find_by_code(product['code'])
 
         expect(duplicate_product).to eq(product)
-        expect(duplicate_product).not_to be(product)
       end
     end
 
     context 'when no product with the given code exists' do
       it 'returns nil' do
         non_existing_code = 'XYZ'
-        product = subject.by_code(non_existing_code)
+        product = subject.find_by_code(non_existing_code)
 
         expect(product).to be_nil
       end

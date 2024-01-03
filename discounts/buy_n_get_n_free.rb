@@ -10,9 +10,6 @@ module Discounts
       @products_to_discount = []
 
       return unless @products.any?
-
-      remove_discounts
-
       return unless discount_eligible?
 
       @products.each { |product| products_to_discount << product if limit_not_exceeded? }
@@ -54,7 +51,7 @@ module Discounts
 
     def discount_products
       products_to_discount.each do |product|
-        product['discount'] = product['price']
+        product.discount = product.price
       end
     end
   end
