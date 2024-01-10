@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'pry'
 require_relative 'loaders/products'
 require_relative 'loaders/discounts'
 
@@ -71,7 +72,7 @@ class Cart
     new_line
 
     @products_in_shop.each do |product|
-      print "#{product.code} - #{product.name} - #{priceify(product.price)}"
+      print "#{product['code']} - #{product['name']} - #{priceify(product['price'])}"
       new_line
     end
 
@@ -96,8 +97,12 @@ class Cart
   end
 
   def add_product(product)
+    binding.pry
     if product
+      binding.pry
       products << product
+      calculate_discounts
+
       print "\n\n#{product.name} added to the cart! \n\n"
     else
       print "\n\nProduct not found! \n\n"
@@ -106,16 +111,26 @@ class Cart
 
   # remove the last product with matching code
   def remove_product(product)
-    # NOTE:            this is line item v            v this is product template from the loader
-    index_to_remove = products.rindex { |p| p.code == product['code'] }
+    index_to_remove = products.rindex { |p| p.code == product.code }
 
     if index_to_remove
       products.delete_at(index_to_remove)
+      calculate_discounts
 
-      print "\n\n #{product['name']} removed from the cart! \n\n"
+      print "\n\n #{product.name} removed from the cart! \n\n"
     else
       print "Product not found in the cart! \n\n"
     end
+  end
+
+  def calculate_discounts
+    binding.pry
+    clear_discounts
+    apply_discounts
+  end
+
+  def clear_discounts
+    products.each { |product| product.discount = nil }
   end
 
   def apply_discounts
@@ -133,8 +148,6 @@ class Cart
   end
 
   def print_summary
-    apply_discounts
-
     discounts_total = total('discount')
     prices_total = total('price')
     total = prices_total - discounts_total

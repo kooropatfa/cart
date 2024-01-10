@@ -72,12 +72,5 @@ module Discounts
     def discount_eligible?
       products.count >= threshold_quantity
     end
-
-    # move to cart
-    def remove_discounts
-      products.each do |product|
-        product.discount = nil if product.code == product_code
-      end
-    end
   end
 end

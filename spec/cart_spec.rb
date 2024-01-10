@@ -2,11 +2,12 @@
 
 require 'spec_helper'
 require_relative '../cart'
+require_relative '../products/product'
 
 describe Cart do
-  let(:product1) { { 'code' => 'asd', 'name' => 'Asdberry', 'price' => 1234 } }
-  let(:product2) { { 'code' => 'asd', 'name' => 'Asdberry', 'price' => 1234 } }
-  let(:other_product) { { 'code' => 'def', 'name' => 'Defruit', 'price' => 1001 } }
+  let(:product1) { Products::Product.build({ 'code' => 'asd', 'name' => 'Asdberry', 'price' => 1234 }) }
+  let(:product2) { Products::Product.build({ 'code' => 'asd', 'name' => 'Asdberry', 'price' => 1234 }) }
+  let(:other_product) { Products::Product.build({ 'code' => 'def', 'name' => 'Defruit', 'price' => 1001 }) }
   let(:summary_regexp) { /.*PRODUCTS:\s+\|\s+PRICE:\s+\|\s+DISCOUNT:\s+\|\n.*/ }
 
   before { allow(::Loaders::Discounts::DiscountConfig).to receive(:load).and_return([]) }
@@ -15,9 +16,11 @@ describe Cart do
 
   shared_examples 'cart that adds product' do
     it 'prints product added to the cart' do
-      expected_output_regexp = /#{Regexp.escape(product['name'])} added to the cart/
+      expected_output_regexp = /#{Regexp.escape(product.name)} added to the cart/
       expect { subject.add_product(product) }.to output(expected_output_regexp).to_stdout
     end
+
+    include_examples 'cart that calculates discounts'
   end
 
   shared_examples 'cart that can not find the product' do
@@ -29,8 +32,20 @@ describe Cart do
 
   shared_examples 'cart that removes product' do
     it 'prints product removed from the cart' do
-      expected_output_regexp = /#{Regexp.escape(product['name'])} removed from the cart/
+      expected_output_regexp = /#{Regexp.escape(product.name)} removed from the cart/
       expect { subject.remove_product(product) }.to output(expected_output_regexp).to_stdout
+    end
+
+    include_examples 'cart that calculates discounts'
+  end
+
+  shared_examples 'cart that calculates discounts' do
+    it 'calculates discounts' do
+      expect(subject).to receive(:calculate_discounts).and_call_original
+      expect(subject).to receive(:clear_discounts)
+      expect(subject).to receive(:apply_discounts)
+
+      subject.remove_product(product)
     end
   end
 
@@ -39,7 +54,7 @@ describe Cart do
       let(:product) { product1 }
 
       it 'adds a product to the cart' do
-        expect { subject.add_product(product) }.to change { subject.products }.from([]).to([product1])
+        expect { subject.add_product(product) }.to change { subject.products }.from([]).to([product])
       end
 
       it_behaves_like 'cart that adds product'
@@ -117,6 +132,14 @@ describe Cart do
           .from([product1, other_product, product2]).to([product1, other_product])
       end
 
+      it 'calculates discounts' do
+        expect(subject).to receive(:calculate_discounts).and_call_original
+        expect(subject).to receive(:clear_discounts)
+        expect(subject).to receive(:apply_discounts)
+
+        subject.remove_product(product)
+      end
+
       it_behaves_like 'cart that removes product'
     end
   end
@@ -150,9 +173,9 @@ describe Cart do
 
         context 'with discounts' do
           before do
-            product1['discount'] = 100
-            product2['discount'] = 200
-            other_product['discount'] = 300
+            product1.discount = 100
+            product2.discount = 200
+            other_product.discount = 300
           end
 
           it 'returns the total amount of all discounts' do
@@ -175,9 +198,9 @@ describe Cart do
 
       context 'with discounts' do
         before do
-          product1['discount'] = 100
-          product2['discount'] = 200
-          other_product['discount'] = 300
+          product1.discount = 100
+          product2.discount = 200
+          other_product.discount = 300
         end
 
         it 'prints the cart summary' do
@@ -196,12 +219,13 @@ describe Cart do
   end
 
   describe '#run' do
-    let(:product1) { ::Loaders::Products.new.by_code('GR1') }
-    let(:product2) { ::Loaders::Products.new.by_code('SR1') }
+    let(:product1) { Products::Product.build({ 'code' => 'GR1', 'name' => 'Green Tea', 'price' => 1234 }) }
+    let(:product2) { Products::Product.build({ 'code' => 'SR1', 'name' => 'Strawberries', 'price' => 4321 }) }
 
     context 'when user adds a product' do
       before do
         allow_any_instance_of(Cart).to receive(:gets).and_return('1', 'GR1', '4')
+        allow(Products::Product).to receive(:build).and_return(product1)
       end
 
       it 'adds the product to the cart' do
@@ -209,7 +233,7 @@ describe Cart do
       end
 
       it 'prints a message indicating the product was added' do
-        expect { subject.run }.to output(/#{Regexp.escape(product1['name'])} added to the cart/m).to_stdout
+        expect { subject.run }.to output(/#{Regexp.escape(product1.name)} added to the cart/m).to_stdout
       end
     end
 
@@ -224,7 +248,7 @@ describe Cart do
       end
 
       it 'prints a message indicating the product was removed' do
-        expect { subject.run }.to output(/#{Regexp.escape(product1['name'])} removed from the cart/m).to_stdout
+        expect { subject.run }.to output(/#{Regexp.escape(product1.name)} removed from the cart/m).to_stdout
       end
     end
 

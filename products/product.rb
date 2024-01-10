@@ -1,23 +1,22 @@
 # frozen_string_literal: true
 
+require_relative 'product_factory'
+
 module Products
+  extend Forwardable
+
   class Product
-    def self.build(product)
-      new(
-        code: product['code'],
-        name: product['name'],
-        price: product['price'],
-        discount: product['discount']
-      )
-    end
-
-    attr_accessor :code, :name, :price, :discount
-
     def initialize(code:, name:, price:, discount: nil)
       @code = code
       @name = name
       @price = price
       @discount = discount
     end
+
+    def self.build(product)
+      ProductFactory.build(product)
+    end
+
+    attr_accessor :code, :name, :price, :discount
   end
 end
