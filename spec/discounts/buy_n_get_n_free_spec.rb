@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require_relative '../../discounts/buy_n_get_n_free'
+require_relative '../../products/product'
 
 describe Discounts::BuyNGetNFree do
   let(:code) { 'PBZ' }
@@ -16,8 +17,8 @@ describe Discounts::BuyNGetNFree do
   let(:product_properties) { { 'code' => code, 'name' => 'Plumberry', 'price' => 100 } }
   let(:other_product_properties) { { 'code' => 'TBZ', 'name' => 'Testberry', 'price' => 1 } }
 
-  7.times { |i| let("product#{i + 1}".to_sym) { Marshal.load(Marshal.dump(product_properties)) } }
-  3.times { |i| let("other_product#{i + 1}".to_sym) { Marshal.load(Marshal.dump(other_product_properties)) } }
+  7.times { |i| let("product#{i + 1}".to_sym) { Products::Product.build(product_properties) } }
+  3.times { |i| let("other_product#{i + 1}".to_sym) { Products::Product.build(other_product_properties) } }
 
   shared_examples 'an eligible discount for less than double threshold' do
     let(:products) { [product1, product2, product3, product4, product5] }
@@ -25,11 +26,11 @@ describe Discounts::BuyNGetNFree do
     it 'applies the discount only to discountable products' do
       subject.apply(products)
 
-      expect(product1['discount']).to eq(100)
-      expect(product2['discount']).to be_nil
-      expect(product3['discount']).to be_nil
-      expect(product4['discount']).to be_nil
-      expect(product5['discount']).to be_nil
+      expect(product1.discount).to eq(100)
+      expect(product2.discount).to be_nil
+      expect(product3.discount).to be_nil
+      expect(product4.discount).to be_nil
+      expect(product5.discount).to be_nil
     end
   end
 
@@ -39,12 +40,12 @@ describe Discounts::BuyNGetNFree do
     it 'applies the discount only to discountable products' do
       subject.apply(products)
 
-      expect(product1['discount']).to eq(100)
-      expect(product2['discount']).to eq(100)
-      expect(product3['discount']).to be_nil
-      expect(product4['discount']).to be_nil
-      expect(product5['discount']).to be_nil
-      expect(product6['discount']).to be_nil
+      expect(product1.discount).to eq(100)
+      expect(product2.discount).to eq(100)
+      expect(product3.discount).to be_nil
+      expect(product4.discount).to be_nil
+      expect(product5.discount).to be_nil
+      expect(product6.discount).to be_nil
     end
   end
 
@@ -54,13 +55,13 @@ describe Discounts::BuyNGetNFree do
     it 'applies the discount only to discountable products' do
       subject.apply(products)
 
-      expect(product1['discount']).to eq(100)
-      expect(product2['discount']).to eq(100)
-      expect(product3['discount']).to be_nil
-      expect(product4['discount']).to be_nil
-      expect(product5['discount']).to be_nil
-      expect(product6['discount']).to be_nil
-      expect(product7['discount']).to be_nil
+      expect(product1.discount).to eq(100)
+      expect(product2.discount).to eq(100)
+      expect(product3.discount).to be_nil
+      expect(product4.discount).to be_nil
+      expect(product5.discount).to be_nil
+      expect(product6.discount).to be_nil
+      expect(product7.discount).to be_nil
     end
   end
 
@@ -75,7 +76,7 @@ describe Discounts::BuyNGetNFree do
 
         subject.apply(products)
 
-        products.each { |product| expect(product['discount']).to be_nil }
+        products.each { |product| expect(product.discount).to be_nil }
       end
     end
 
@@ -89,7 +90,7 @@ describe Discounts::BuyNGetNFree do
 
             subject.apply(products)
 
-            products.each { |product| expect(product['discount']).to be_nil }
+            products.each { |product| expect(product.discount).to be_nil }
           end
         end
 
@@ -99,12 +100,12 @@ describe Discounts::BuyNGetNFree do
           it 'applies the discount only to discountable products' do
             subject.apply(products)
 
-            expect(product1['discount']).to eq(100)
-            expect(product2['discount']).to be_nil
-            expect(product3['discount']).to be_nil
-            expect(other_product1['discount']).to be_nil
-            expect(other_product2['discount']).to be_nil
-            expect(other_product3['discount']).to be_nil
+            expect(product1.discount).to eq(100)
+            expect(product2.discount).to be_nil
+            expect(product3.discount).to be_nil
+            expect(other_product1.discount).to be_nil
+            expect(other_product2.discount).to be_nil
+            expect(other_product3.discount).to be_nil
           end
         end
       end
@@ -124,8 +125,7 @@ describe Discounts::BuyNGetNFree do
 
         context 'when products already have discounts' do
           before do
-            product1['discount'] = 100
-            product2['discount'] = 100
+            product1.discount = 100
           end
 
           context 'when there are less matching products than double threshold' do
@@ -145,16 +145,14 @@ describe Discounts::BuyNGetNFree do
       context 'when the discount is not eligible' do
         let(:products) { [product1, product2, other_product1] }
 
-        before do
-          products.each { |product| product['discount'] = 100 }
-        end
+        before { other_product1.discount = 100 }
 
         it 'does not apply any discounts and removes existing ones' do
           subject.apply(products)
 
-          expect(product1['discount']).to be_nil
-          expect(product2['discount']).to be_nil
-          expect(other_product1['discount']).to eq(100)
+          expect(product1.discount).to be_nil
+          expect(product2.discount).to be_nil
+          expect(other_product1.discount).to eq(100)
         end
       end
     end

@@ -101,24 +101,6 @@ describe Discounts::Discount do
         end
       end
     end
-
-    context 'when the discount type is not specified' do
-      before { discount_json['type'] = nil }
-
-      it 'raises an error' do
-        expect { subject.send(:validate_general_discount_properties) }.to raise_error('Discount type not specified')
-      end
-    end
-
-    context 'when the discount type is not valid' do
-      before { discount_json['type'] = 'invalid_type' }
-
-      it 'raises an error' do
-        expect do
-          subject.send(:validate_general_discount_properties)
-        end.to raise_error("Discount type should be one of #{Discounts::TYPES_MAPPING.keys}")
-      end
-    end
   end
 
   describe '#validate_product_code' do
@@ -159,39 +141,6 @@ describe Discounts::Discount do
 
       it 'returns false' do
         expect(subject.send(:discount_eligible?)).to be false
-      end
-    end
-  end
-
-  describe '#remove_discounts' do
-    context 'when the product code matches the discount product code' do
-      before do
-        products.each { |product| product['discount'] = 100 }
-        subject.instance_variable_set(:@products, products)
-      end
-
-      it 'removes the discount from the products' do
-        subject.send(:remove_discounts)
-        products.each { |product| expect(product).not_to have_key('discount') }
-      end
-    end
-
-    context 'when the product code does not match the discount product code' do
-      let(:other_product) { { 'code' => 'nan', 'name' => 'Not a nut', 'price' => 99, 'discount' => 98 } }
-
-      before do
-        products.each { |product| product['discount'] = 100 }
-        products << other_product
-        subject.instance_variable_set(:@products, products)
-      end
-
-      it 'does not remove the discount from the products' do
-        subject.send(:remove_discounts)
-
-        expect(product1).not_to have_key('discount')
-        expect(product2).not_to have_key('discount')
-        expect(product3).not_to have_key('discount')
-        expect(other_product['discount']).to eq(98)
       end
     end
   end

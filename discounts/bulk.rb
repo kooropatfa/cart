@@ -15,8 +15,6 @@ module Discounts
 
       return unless @products.any?
 
-      remove_discounts
-
       discount_products if discount_eligible?
     end
 
@@ -78,7 +76,7 @@ module Discounts
     end
 
     def product_price
-      @product ||= ::Loaders::Products.new.by_code(product_code)
+      @product ||= ::Loaders::Products.new.find_by_code(product_code)
 
       return unless @product
 
@@ -87,7 +85,7 @@ module Discounts
 
     def discount_products
       products.each do |product|
-        product['discount'] = calculate_discount
+        product.discount = calculate_discount
       end
     end
 

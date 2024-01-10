@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
+require 'pry'
 require_relative 'loaders/products'
 require_relative 'loaders/discounts'
-require 'pry'
 
 class Cart
   CURRENCY_SYMBOL = '€'
@@ -11,7 +11,7 @@ class Cart
   def initialize
     @products_loader = ::Loaders::Products.new
     @products_in_shop = @products_loader.products
-    @discounts = ::Loaders::Discounts.new.discounts
+    @discounts = ::Loaders::Discounts::DiscountConfig.load
     @products = []
   end
 
@@ -54,7 +54,7 @@ class Cart
     raise 'Invalid attribute' unless %w[price discount].include?(attribute)
 
     total = @products.reduce(0) do |total, product|
-      value = product[attribute]
+      value = product.send(attribute)
       total += value if value
 
       total
@@ -93,13 +93,17 @@ class Cart
   end
 
   def product(code)
-    @products_loader.by_code(code)
+    Products::Product.build(@products_loader.find_by_code(code))
   end
 
   def add_product(product)
+    binding.pry
     if product
+      binding.pry
       products << product
-      print "\n\n#{product['name']} added to the cart! \n\n"
+      calculate_discounts
+
+      print "\n\n#{product.name} added to the cart! \n\n"
     else
       print "\n\nProduct not found! \n\n"
     end
@@ -107,15 +111,26 @@ class Cart
 
   # remove the last product with matching code
   def remove_product(product)
-    index_to_remove = products.rindex { |p| p['code'] == product['code'] }
+    index_to_remove = products.rindex { |p| p.code == product.code }
 
     if index_to_remove
       products.delete_at(index_to_remove)
+      calculate_discounts
 
-      print "\n\n #{product['name']} removed from the cart! \n\n"
+      print "\n\n #{product.name} removed from the cart! \n\n"
     else
       print "Product not found in the cart! \n\n"
     end
+  end
+
+  def calculate_discounts
+    binding.pry
+    clear_discounts
+    apply_discounts
+  end
+
+  def clear_discounts
+    products.each { |product| product.discount = nil }
   end
 
   def apply_discounts
@@ -133,14 +148,12 @@ class Cart
   end
 
   def print_summary
-    apply_discounts
-
     discounts_total = total('discount')
     prices_total = total('price')
     total = prices_total - discounts_total
 
     products_rows = products.map do |product|
-      "#{product['name']} | #{priceify(product['price'])}    | #{priceify(product['discount'])}"
+      "#{product.name} | #{priceify(product.price)}    | #{priceify(product.discount)}"
     end
 
     summary =
